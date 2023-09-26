@@ -1,11 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+#if NET_STANDARD_2_0 || NETSTANDARD2_0
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
-
+#else
+using UnityEngine;
+#endif
 namespace WindBot.Game.AI
 {
+#if NET_STANDARD_2_0 || NETSTANDARD2_0
     [DataContract]
     public class DialogsData
     {
@@ -38,6 +42,26 @@ namespace WindBot.Game.AI
         [DataMember]
         public string[] custom { get; set; }
     }
+#else
+    [System.Serializable]
+    public class DialogsData
+    {
+        public string[] welcome;
+        public string[] deckerror;
+        public string[] duelstart;
+        public string[] newturn;
+        public string[] endturn;
+        public string[] directattack;
+        public string[] attack;
+        public string[] ondirectattack;
+        public string facedownmonstername;
+        public string[] activate;
+        public string[] summon;
+        public string[] setmonster;
+        public string[] chaining;
+        public string[] custom;
+    }
+#endif
     public class Dialogs
     {
         private GameClient _game;
@@ -60,11 +84,16 @@ namespace WindBot.Game.AI
         public Dialogs(GameClient game)
         {
             _game = game;
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(DialogsData));
             string dialogfilename = game.Dialog;
+            #if NET_STANDARD_2_0 || NETSTANDARD2_0
+            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(DialogsData));
             using (FileStream fs = Program.ReadFile("Dialogs", dialogfilename, "json"))
             {
                 DialogsData data = (DialogsData)serializer.ReadObject(fs);
+            #else
+                string jsonFile = Program.getFile("Dialogs", dialogfilename, "json");
+                DialogsData data = JsonUtility.FromJson<DialogsData>(File.ReadAllText(jsonFile, System.Text.Encoding.UTF8));
+            #endif
                 _welcome = data.welcome;
                 _deckerror = data.deckerror;
                 _duelstart = data.duelstart;
@@ -79,7 +108,9 @@ namespace WindBot.Game.AI
                 _setmonster = data.setmonster;
                 _chaining = data.chaining;
                 _custom = data.custom;
+            #if NET_STANDARD_2_0 || NETSTANDARD2_0
             }
+            #endif
         }
 
         public void SendSorry()

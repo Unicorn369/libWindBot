@@ -94,7 +94,7 @@ namespace WindBot.Game
             _messages.Add(GameMessage.ShuffleHand, OnShuffleHand);
             _messages.Add(GameMessage.ShuffleExtra, OnShuffleExtra);
             _messages.Add(GameMessage.ShuffleSetCard, OnShuffleSetCard);
-            _messages.Add(GameMessage.SwapGraveDeck, OnSwapGraveDeck);            
+            _messages.Add(GameMessage.SwapGraveDeck, OnSwapGraveDeck);
             _messages.Add(GameMessage.TagSwap, OnTagSwap);
             _messages.Add(GameMessage.NewTurn, OnNewTurn);
             _messages.Add(GameMessage.NewPhase, OnNewPhase);
@@ -144,6 +144,7 @@ namespace WindBot.Game
             _messages.Add(GameMessage.SpSummoned, OnSpSummoned);
             _messages.Add(GameMessage.FlipSummoning, OnSummoning);
             _messages.Add(GameMessage.FlipSummoned, OnSummoned);
+            _messages.Add(GameMessage.ConfirmCards, OnConfirmCards);
         }
 
         private void OnJoinGame(BinaryReader packet)
@@ -336,10 +337,6 @@ namespace WindBot.Game
                 {
                     _duel.Fields[0].UnderAttack = false;
                     _duel.Fields[1].UnderAttack = false;
-                }
-                else if (data == 23) //Main Phase end
-                {
-                    _duel.MainPhaseEnd = true;
                 }
             }
             if (type == 3) // HINT_SELECTMSG
@@ -548,7 +545,6 @@ namespace WindBot.Game
             {
                 monster.Attacked = false;
             }
-            _duel.MainPhaseEnd = false;
             _select_hint = 0;
             _ai.OnNewPhase();
         }
@@ -639,6 +635,8 @@ namespace WindBot.Game
                         (CardLocation)previousLocation + " move to " + (CardLocation)currentLocation + ")");
                 }
             }
+        
+            _ai.OnMove(cardId, previousControler, previousLocation, currentControler, currentLocation);
         }
 
         private void OnSwap(BinaryReader packet)
@@ -746,7 +744,6 @@ namespace WindBot.Game
 
         private void OnChainEnd(BinaryReader packet)
         {
-            _duel.MainPhaseEnd = false;
             _ai.OnChainEnd();
             _duel.LastChainPlayer = -1;
             _duel.LastChainLocation = 0;
@@ -961,7 +958,10 @@ namespace WindBot.Game
                 if (((int)loc & (int)CardLocation.Overlay) != 0)
                     card = new ClientCard(id, CardLocation.Overlay, -1);
                 else
+                {
                     card = _duel.GetCard(player, loc, seq);
+                    card.Controller = player;
+                }
                 if (card == null) continue;
                 if (card.Id == 0)
                     card.SetId(id);
@@ -1896,6 +1896,23 @@ namespace WindBot.Game
                 _duel.LastSummonedCards.Add(card);
             }
             _duel.SummoningCards.Clear();
+        }
+
+        private void OnConfirmCards(BinaryReader packet)
+        {
+            /*int playerid = */packet.ReadByte();
+            int count = packet.ReadByte();
+            for (int i = 0; i < count; ++ i)
+            {
+                int cardId = packet.ReadInt32();
+                int player = GetLocalPlayer(packet.ReadByte());
+                int loc = packet.ReadByte();
+                int seq = packet.ReadByte();
+                ClientCard card = _duel.GetCard(player, (CardLocation)loc, seq);
+                if (cardId > 0) card.SetId(cardId);
+                if (_debug)
+                    Logger.WriteLine("(Confirm " + player.ToString() + "'s " + (CardLocation)loc + " card: " + (card.Name ?? "UnKnowCard") + ")");
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-#if NET_STANDARD_2_0 || NETSTANDARD2_0
+#if (NET_STANDARD_2_0 || NETSTANDARD2_0)
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 #else
@@ -9,7 +9,7 @@ using UnityEngine;
 #endif
 namespace WindBot.Game.AI
 {
-#if NET_STANDARD_2_0 || NETSTANDARD2_0
+#if (NET_STANDARD_2_0 || NETSTANDARD2_0)
     [DataContract]
     public class DialogsData
     {
@@ -85,7 +85,7 @@ namespace WindBot.Game.AI
         {
             _game = game;
             string dialogfilename = game.Dialog;
-            #if NET_STANDARD_2_0 || NETSTANDARD2_0
+            #if (NET_STANDARD_2_0 || NETSTANDARD2_0)
             DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(DialogsData));
             using (FileStream fs = Program.ReadFile("Dialogs", dialogfilename, "json"))
             {
@@ -108,7 +108,7 @@ namespace WindBot.Game.AI
                 _setmonster = data.setmonster;
                 _chaining = data.chaining;
                 _custom = data.custom;
-            #if NET_STANDARD_2_0 || NETSTANDARD2_0
+            #if (NET_STANDARD_2_0 || NETSTANDARD2_0)
             }
             #endif
         }

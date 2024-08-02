@@ -5,7 +5,7 @@
     <Version>1.0.0.0</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <Copyright>Copyright © 2023</Copyright>
+    <Copyright>Copyright © 2024</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +14,7 @@
     </Reference>
   </ItemGroup>
 
+  <!--适用于Unity3D-->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net471' ">
     <Reference Include="UnityEngine.JSONSerializeModule">
       <HintPath>.\UnityEngine.JSONSerializeModule.dll</HintPath>
